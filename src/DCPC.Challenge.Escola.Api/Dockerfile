@@ -1,32 +1,25 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# Runtime (.NET 9)
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
 
-#ENV ASPNETCORE_URLS=http://+:8000;http://+:80;
+# Build + Publish (.NET 9 SDK)
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-# Copy all in this root folder
-COPY ./InvesTrace.Identity.Api/InvesTrace.Identity.Api.csproj /InvesTrace.Identity.Api/
-WORKDIR /InvesTrace.Identity.Api
-# Restore libraries
-RUN dotnet restore
+# Copia csproj e restaura
+COPY DCPC.Challenge.Escola.Api/DCPC.Challenge.Escola.Api.csproj DCPC.Challenge.Escola.Api/
+RUN dotnet restore DCPC.Challenge.Escola.Api/DCPC.Challenge.Escola.Api.csproj
 
+# Copia o restante do código
 COPY . .
+# Publica o projeto
+RUN dotnet publish DCPC.Challenge.Escola.Api/DCPC.Challenge.Escola.Api.csproj -c Release -o /app/publish /p:UseAppHost=false
 
-RUN dotnet build InvesTrace.Identity.Api/InvesTrace.Identity.Api.csproj -c Release -o /app/build
-
-FROM build AS publish
-RUN dotnet publish InvesTrace.Identity.Api/InvesTrace.Identity.Api.csproj -c Release -o /app/publish
-
-FROM runtime AS final
+# Final
+FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
-
-ARG ENVIRONMENT
-ENV ASPNETCORE_ENVIRONMENT $ENVIRONMENT
-ENTRYPOINT [ "dotnet", "InvesTrace.Identity.Api.dll" ]
-
-# Usa porta dinâmica do Heroku
-#CMD ASPNETCORE_URLS="http://*:$PORT" dotnet InvesTrace.Identity.Api.dll
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "DCPC.Challenge.Escola.Api.dll"]
 
