@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.34916.146
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DCPC.Challenge.Escola.Api", "DCPC.Challenge.Escola.Api\DCPC.Challenge.Escola.Api.csproj", "{F80DA845-FB9D-BAD5-1693-C29FA7DB8F09}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F80DA845-FB9D-BAD5-1693-C29FA7DB8F09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F80DA845-FB9D-BAD5-1693-C29FA7DB8F09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F80DA845-FB9D-BAD5-1693-C29FA7DB8F09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F80DA845-FB9D-BAD5-1693-C29FA7DB8F09}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FC27F9D7-1634-4FE4-8214-C5DDE0CBDB39}
+	EndGlobalSection
+EndGlobal
