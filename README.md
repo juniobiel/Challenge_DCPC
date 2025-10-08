@@ -20,7 +20,7 @@ https://dotnet.microsoft.com/download/dotnet a versão utilizada neste projeto f
 
 Depois de instalado, recomendo abrir o arquivo `DCPC.Challenge.sln` diretamente no visual studio e após isso terá a opção de rodar a aplicação.
 
-![Botão Rodar API Visual Studio](https://imgur.com/a/EcjcTVH)
+![Botão Rodar API Visual Studio](https://i.imgur.com/BNVzh3s.png)
 
 Assim, irá abrir o Swagger com a documentação da API contendo todos os end-points.
 
