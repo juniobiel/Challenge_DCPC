@@ -17,6 +17,13 @@ public static class Dependencies
         services.AddScoped<IMatriculaRepository, MatriculaRepository>();
         services.AddScoped<INotaRepository, NotaRepository>();
 
+        services.AddScoped<IProfessoresService, ProfessoresService>();
+        services.AddScoped<ICursosService, CursosService>();
+        services.AddScoped<ITurmasService, TurmasService>();
+        services.AddScoped<IMatriculasService, MatriculasService>();
+        services.AddScoped<INotasService, NotasService>();
+        services.AddScoped<IAlunosService, AlunosService>();
+
         return services;
     }
 }

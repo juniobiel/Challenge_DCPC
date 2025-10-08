@@ -1,47 +1,46 @@
-using DCPC.Challenge.Escola.Api.Data;
-using DCPC.Challenge.Escola.Api.Data.Repositories.Interfaces;
 using DCPC.Challenge.Escola.Api.Models;
+using DCPC.Challenge.Escola.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DCPC.Challenge.Escola.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/turmas")]
     public class TurmasController : ControllerBase
     {
-        private readonly ITurmaRepository _repo;
-        private readonly ApplicationDbContext _db;
+        private readonly ITurmasService _service;
 
-        public TurmasController(ITurmaRepository repo, ApplicationDbContext db)
+        public TurmasController(ITurmasService service)
         {
-            _repo = repo;
-            _db = db;
+            _service = service;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Turma>>> GetAll(CancellationToken ct)
-            => Ok(await _repo.ListAsync(ct));
+        public async Task<ActionResult<IEnumerable<Turma>>> GetAll()
+            => Ok(await _service.ListarAsync());
 
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<Turma>> GetById(Guid id, CancellationToken ct)
+        public async Task<ActionResult<Turma>> GetById(Guid id)
         {
-            var item = await _repo.GetWithCursoProfessorAsync(id, ct) ?? await _repo.GetByIdAsync(id, ct);
+            var item = await _service.ObterPorIdAsync(id);
             return item is null ? NotFound() : Ok(item);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Turma>> Create([FromBody] Turma input, CancellationToken ct)
+        public async Task<ActionResult<Turma>> Create([FromBody] Turma input)
         {
-            input.Id = Guid.NewGuid();
-            await _repo.AddAsync(input, ct);
-            await _db.SaveChangesAsync(ct);
-            return CreatedAtAction(nameof(GetById), new { id = input.Id }, input);
+            if (input is null) return BadRequest();
+
+            var created = await _service.RegistrarTurma(input);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] Turma input, CancellationToken ct)
+        public async Task<IActionResult> Update(Guid id, [FromBody] Turma input)
         {
-            var entity = await _repo.GetByIdAsync(id, ct);
+            var entity = await _service.ObterPorIdAsync(id);
             if (entity is null) return NotFound();
 
             entity.Nome = input.Nome;
@@ -50,20 +49,15 @@ namespace DCPC.Challenge.Escola.Api.Controllers
             entity.CursoId = input.CursoId;
             entity.ProfessorId = input.ProfessorId;
 
-            _repo.Update(entity);
-            await _db.SaveChangesAsync(ct);
+            await _service.AtualizarTurmaAsync(entity);
             return NoContent();
         }
 
         [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            var entity = await _repo.GetByIdAsync(id, ct);
-            if (entity is null) return NotFound();
-
-            _repo.Remove(entity);
-            await _db.SaveChangesAsync(ct);
-            return NoContent();
+            var removed = await _service.RemoverTurmaAsync(id);
+            return removed ? NoContent() : NotFound();
         }
     }
 }

@@ -1,66 +1,60 @@
-using DCPC.Challenge.Escola.Api.Data;
-using DCPC.Challenge.Escola.Api.Data.Repositories.Interfaces;
 using DCPC.Challenge.Escola.Api.Models;
+using DCPC.Challenge.Escola.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DCPC.Challenge.Escola.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/cursos")]
     public class CursosController : ControllerBase
     {
-        private readonly ICursoRepository _repo;
-        private readonly ApplicationDbContext _db;
+        private readonly ICursosService _service;
 
-        public CursosController(ICursoRepository repo, ApplicationDbContext db)
+        public CursosController(ICursosService service)
         {
-            _repo = repo;
-            _db = db;
+            _service = service;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Curso>>> GetAll(CancellationToken ct)
-            => Ok(await _repo.ListAsync(ct));
+        public async Task<ActionResult<IEnumerable<Curso>>> GetAll()
+            => Ok(await _service.ListarAsync());
 
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<Curso>> GetById(Guid id, CancellationToken ct)
+        public async Task<ActionResult<Curso>> GetById(Guid id)
         {
-            var item = await _repo.GetByIdAsync(id, ct);
+            var item = await _service.ObterPorIdAsync(id);
             return item is null ? NotFound() : Ok(item);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Curso>> Create([FromBody] Curso input, CancellationToken ct)
+        public async Task<ActionResult<Curso>> Create([FromBody] Curso input)
         {
-            input.Id = Guid.NewGuid();
-            await _repo.AddAsync(input, ct);
-            await _db.SaveChangesAsync(ct);
-            return CreatedAtAction(nameof(GetById), new { id = input.Id }, input);
+            if (input is null) return BadRequest();
+
+            var created = await _service.RegistrarCurso(input);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] Curso input, CancellationToken ct)
+        public async Task<IActionResult> Update(Guid id, [FromBody] Curso input)
         {
-            var entity = await _repo.GetByIdAsync(id, ct);
+            var entity = await _service.ObterPorIdAsync(id);
             if (entity is null) return NotFound();
 
             entity.Nome = input.Nome;
             entity.CargaHoraria = input.CargaHoraria;
 
-            _repo.Update(entity);
-            await _db.SaveChangesAsync(ct);
+            await _service.AtualizarCursoAsync(entity);
             return NoContent();
         }
 
         [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            var entity = await _repo.GetByIdAsync(id, ct);
-            if (entity is null) return NotFound();
-
-            _repo.Remove(entity);
-            await _db.SaveChangesAsync(ct);
-            return NoContent();
+            var removed = await _service.RemoverCursoAsync(id);
+            return removed ? NoContent() : NotFound();
         }
     }
 }

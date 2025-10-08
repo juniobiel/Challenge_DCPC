@@ -1,51 +1,46 @@
-using DCPC.Challenge.Escola.Api.Data;
-using DCPC.Challenge.Escola.Api.Data.Repositories.Interfaces;
 using DCPC.Challenge.Escola.Api.Models;
+using DCPC.Challenge.Escola.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DCPC.Challenge.Escola.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/notas")]
     public class NotasController : ControllerBase
     {
-        private readonly INotaRepository _repo;
-        private readonly ApplicationDbContext _db;
+        private readonly INotasService _service;
 
-        public NotasController(INotaRepository repo, ApplicationDbContext db)
+        public NotasController( INotasService service )
         {
-            _repo = repo;
-            _db = db;
+            _service = service;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Nota>>> GetAll(CancellationToken ct)
-            => Ok(await _repo.ListAsync(ct));
+        public async Task<ActionResult<IEnumerable<Nota>>> GetAll()
+            => Ok(await _service.ListarAsync());
 
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<Nota>> GetById(Guid id, CancellationToken ct)
+        public async Task<ActionResult<Nota>> GetById( Guid id )
         {
-            var item = await _repo.GetByIdAsync(id, ct);
+            var item = await _service.ObterPorIdAsync(id);
             return item is null ? NotFound() : Ok(item);
         }
 
-        [HttpGet("por-matricula/{matriculaId:guid}")]
-        public async Task<ActionResult<IEnumerable<Nota>>> ListByMatricula(Guid matriculaId, CancellationToken ct)
-            => Ok(await _repo.ListByMatriculaAsync(matriculaId, ct));
-
         [HttpPost]
-        public async Task<ActionResult<Nota>> Create([FromBody] Nota input, CancellationToken ct)
+        public async Task<ActionResult<Nota>> Create( [FromBody] Nota input )
         {
-            input.Id = Guid.NewGuid();
-            await _repo.AddAsync(input, ct);
-            await _db.SaveChangesAsync(ct);
-            return CreatedAtAction(nameof(GetById), new { id = input.Id }, input);
+            if (input is null) return BadRequest();
+
+            var created = await _service.RegistrarNota(input);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] Nota input, CancellationToken ct)
+        public async Task<IActionResult> Update( Guid id, [FromBody] Nota input )
         {
-            var entity = await _repo.GetByIdAsync(id, ct);
+            var entity = await _service.ObterPorIdAsync(id);
             if (entity is null) return NotFound();
 
             entity.MatriculaId = input.MatriculaId;
@@ -53,20 +48,15 @@ namespace DCPC.Challenge.Escola.Api.Controllers
             entity.Valor = input.Valor;
             entity.Data = input.Data;
 
-            _repo.Update(entity);
-            await _db.SaveChangesAsync(ct);
+            await _service.AtualizarNotaAsync(entity);
             return NoContent();
         }
 
         [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+        public async Task<IActionResult> Delete( Guid id )
         {
-            var entity = await _repo.GetByIdAsync(id, ct);
-            if (entity is null) return NotFound();
-
-            _repo.Remove(entity);
-            await _db.SaveChangesAsync(ct);
-            return NoContent();
+            var removed = await _service.RemoverNotaAsync(id);
+            return removed ? NoContent() : NotFound();
         }
     }
 }

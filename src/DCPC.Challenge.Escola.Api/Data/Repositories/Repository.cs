@@ -1,4 +1,3 @@
-using DCPC.Challenge.Escola.Api.Data;
 using DCPC.Challenge.Escola.Api.Data.Repositories.Interfaces;
 using DCPC.Challenge.Escola.Api.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,17 +16,17 @@ namespace DCPC.Challenge.Escola.Api.Data.Repositories
             _set = db.Set<T>();
         }
 
-        public virtual async Task<T> GetByIdAsync(Guid id, CancellationToken ct)
-            => await _set.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id, ct);
+        public virtual async Task<T> GetByIdAsync(Guid id)
+            => await _set.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
 
-        public virtual async Task<List<T>> ListAsync(CancellationToken ct)
-            => await _set.AsNoTracking().ToListAsync(ct);
+        public virtual async Task<List<T>> ListAsync()
+            => await _set.AsNoTracking().ToListAsync();
 
-        public virtual async Task<List<T>> ListAsync(Expression<Func<T, bool>> predicate, CancellationToken ct)
-            => await _set.AsNoTracking().Where(predicate).ToListAsync(ct);
+        public virtual async Task<List<T>> ListAsync(Expression<Func<T, bool>> predicate)
+            => await _set.AsNoTracking().Where(predicate).ToListAsync();
 
-        public virtual async Task AddAsync(T entity, CancellationToken ct)
-            => await _set.AddAsync(entity, ct);
+        public virtual async Task AddAsync(T entity)
+            => await _set.AddAsync(entity);
 
         public virtual void Update(T entity)
             => _set.Update(entity);
@@ -35,8 +34,8 @@ namespace DCPC.Challenge.Escola.Api.Data.Repositories
         public virtual void Remove(T entity)
             => _set.Remove(entity);
 
-        public virtual Task<bool> ExistsAsync(Guid id, CancellationToken ct)
-            => _set.AnyAsync(e => e.Id == id, ct);
+        public virtual Task<bool> ExistsAsync(Guid id)
+            => _set.AnyAsync(e => e.Id == id);
 
         public virtual IQueryable<T> Query()
             => _set.AsQueryable();
