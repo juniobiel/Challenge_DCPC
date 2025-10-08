@@ -20,6 +20,7 @@ public class Startup
     public void ConfigureServices( IServiceCollection services )
     {
         services.AddControllers();
+        services.AddCorsPolicies();
         services.AddSwaggerConfig();
 
         services.AddDbConfig(Configuration);
@@ -38,6 +39,8 @@ public class Startup
         }
 
         app.UseRouting();
+        app.UseCors("AllowAll");
+
         app.UseHttpsRedirection();
         app.UseHsts();
         app.UseAuthentication();
